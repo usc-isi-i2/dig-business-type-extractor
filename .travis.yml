@@ -1,7 +1,8 @@
 language: python
 python:
 - '2.7'
-install: pip install -r requirements.txt
+install: 
+- grep -v "^#" requirements.txt | xargs -L 1 pip install
 script: python -m unittest discover
 notifications:
   slack:
