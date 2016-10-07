@@ -2,7 +2,7 @@
 # @Author: ZwEin
 # @Date:   2016-10-06 23:36:45
 # @Last Modified by:   ZwEin
-# @Last Modified time: 2016-10-07 13:31:44
+# @Last Modified time: 2016-10-07 13:56:12
 # -*- coding: utf-8 -*-
 # @Author: ZwEin
 # @Date:   2016-09-23 12:58:37
@@ -130,7 +130,6 @@ class WEDC(object):
         self.classifier.fit(vectors, self.labels)
         joblib.dump(self.classifier, self.classifier_model_path) 
         joblib.dump(self.vectorizer, self.vectorizer_model_path) 
-        # DC_DEFAULT_VECTORIZER_MODEL_PATH
         
         return self.classifier, self.vectorizer
 
@@ -155,15 +154,3 @@ class WEDC(object):
         data_corpus = vectorizer.transform(data_corpus).toarray()
         
         return [DC_CATEGORY_NAMES[int(i)] for i in classifier.predict(data_corpus)]
-
-if __name__ == '__main__':
-
-    test_data = ["   DOWNTOWN NEW HOT ASIAN ANGEL 100% REAL PICS Sexy Face Young  - 19      - Click to save or unsave                                                    Posted:  4 months ago                                        Age:  19                                   Category:   Phoenix Escorts                    Hi, Guys,   My Name is Lydia, and I new to the area,   I am a Korean and Spanish mix college student.only paritime, I am 20yrs, 5'4, 34D-23-35.   You will enjoy our time together guaranteed. 100% me.. *I'm ""the REAL deal""* I'm a Sweet, FUN playmate that knows how to have a good time!   Never Say No!! Never Rush!!  Call or Txt: 929-272-7898, TXT: 647-687-7096, Wechat: aa5854660383                        (929) 272-7898                      |  929.272.7898                      |  929-272-7898                      |  (929)272-7898                      |  9292727898     Flag this ad     Hi, Guys, My Name is Lydia, and I new to the area, I am a Korean and Spanish mix college student.only paritime, I am 20yrs, 5'4, 34D-23-35. You will enjoy our time together guaranteed. 100% me.. *I'm ""the REAL deal""* I'm a Sweet, FUN playmate that knows how to have a good time! Never Say No!! Never Rush!! Call or Txt: 929-272-7898, TXT: 647-687-7096, Wechat: aa5854660383 DOWNTOWN NEW HOT ASIAN ANGEL 100% REAL PICS Sexy Face Young  - 19 DOWNTOWN NEW HOT ASIAN ANGEL 100% REAL PICS Sexy Face Young  - 19 - A Sexy Service.com"]
-
-
-    # data_path = os.path.join(DATA_DIR, 'dataset.csv') # include all training and testing dataset
-    dc = WEDC(vectorizer_type='count', classifier_type='knn')
-    print dc.predict(test_data)
-    # print dc.train()
-    # init_env()
-

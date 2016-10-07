@@ -3,7 +3,7 @@ import time
 import os
 import unittest
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+# sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 # TEST_DATA_DIR = os.path.join(os.path.dirname(__file__), 'data')
 
 from digExtractor.extractor import Extractor
