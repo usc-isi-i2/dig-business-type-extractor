@@ -2,7 +2,7 @@
 # @Author: ZwEin
 # @Date:   2016-10-06 23:36:45
 # @Last Modified by:   ZwEin
-# @Last Modified time: 2016-10-07 13:56:12
+# @Last Modified time: 2016-10-10 11:23:33
 # -*- coding: utf-8 -*-
 # @Author: ZwEin
 # @Date:   2016-09-23 12:58:37
@@ -61,6 +61,8 @@ def init_env():
     default_data_path = os.path.join(os.path.dirname(__file__), 'data', 'dataset.csv')
     if not os.path.exists(DC_DEFAULT_DATASET_PATH):
         shutil.copy(default_data_path, DC_DEFAULT_DATASET_PATH)
+        
+init_env()
 
 class WEDC(object):
 
