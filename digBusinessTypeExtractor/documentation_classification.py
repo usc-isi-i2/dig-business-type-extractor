@@ -2,7 +2,7 @@
 # @Author: ZwEin
 # @Date:   2016-10-06 23:36:45
 # @Last Modified by:   ZwEin
-# @Last Modified time: 2016-10-10 11:23:33
+# @Last Modified time: 2016-10-12 14:04:51
 # -*- coding: utf-8 -*-
 # @Author: ZwEin
 # @Date:   2016-09-23 12:58:37
@@ -70,7 +70,7 @@ class WEDC(object):
     # Basic Methods
     ##################################################################
 
-    def __init__(self, data_path=DC_DEFAULT_DATASET_PATH, classifier_model_path=None, vectorizer_model_path=None, vectorizer_type='count', classifier_type='knn'):
+    def __init__(self, data_path=DC_DEFAULT_DATASET_PATH, vectorizer_model_path=None, vectorizer_type='tfidf', classifier_model_path=None, classifier_type='knn', classifier_algorithm='brute', metrix='cosine'):
         self.corpus = []
         self.labels = []
         self.size = 0
@@ -82,7 +82,7 @@ class WEDC(object):
             self.size += len(new_labels)
 
         self.vectorizer = self.load_vectorizer(handler_type=vectorizer_type, binary=True)
-        self.classifier = self.load_classifier(handler_type=classifier_type, weights='distance', n_neighbors=5, metric='jaccard')
+        self.classifier = self.load_classifier(handler_type=classifier_type, algorithm=classifier_algorithm, weights='distance', n_neighbors=5, metric=metrix)
 
         if not classifier_model_path:
             self.classifier_model_path = DC_DEFAULT_CLASSIFIER_MODEL_PATH
@@ -113,6 +113,7 @@ class WEDC(object):
     def load_classifier(self, handler_type='knn', **kwargs):
         classifiers = {
             'knn': KNeighborsClassifier( \
+                        algorithm=kwargs.get('algorithm', 'auto'), \
                         weights=kwargs.get('weights', 'distance'), \
                         n_neighbors=kwargs.get('n_neighbors', 5), \
                         metric=kwargs.get('metric', 'jaccard'))
@@ -126,9 +127,11 @@ class WEDC(object):
             self.corpus += new_corpus
             self.labels += new_labels
             self.size += len(new_labels)
-
-        vectors = self.vectorizer.fit_transform(self.corpus).toarray()
-
+            
+        # vectors = self.vectorizer.fit_transform(self.corpus).toarray()
+        # self.classifier.fit(vectors, self.labels)
+        
+        vectors = self.vectorizer.fit_transform(self.corpus)
         self.classifier.fit(vectors, self.labels)
         joblib.dump(self.classifier, self.classifier_model_path) 
         joblib.dump(self.vectorizer, self.vectorizer_model_path) 
@@ -156,3 +159,8 @@ class WEDC(object):
         data_corpus = vectorizer.transform(data_corpus).toarray()
         
         return [DC_CATEGORY_NAMES[int(i)] for i in classifier.predict(data_corpus)]
+
+
+if __name__ == '__main__':
+    dc = WEDC()
+    dc.train()
