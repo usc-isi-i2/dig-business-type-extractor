@@ -26,8 +26,6 @@ class TestBusinessTypeExtractorMethods(unittest.TestCase):
         updated_doc = extractor_processor.extract(doc)
         self.assertEqual(updated_doc['extracted'][0]['value'], ['escort'])
 
-    
-
 if __name__ == '__main__':
     unittest.main()
 
