@@ -2,7 +2,7 @@
 # @Author: ZwEin
 # @Date:   2016-10-06 23:36:45
 # @Last Modified by:   ZwEin
-# @Last Modified time: 2016-10-12 14:41:11
+# @Last Modified time: 2016-10-12 16:14:07
 # -*- coding: utf-8 -*-
 # @Author: ZwEin
 # @Date:   2016-09-23 12:58:37
@@ -25,6 +25,8 @@ import shutil
 ##################################################################
 # Constant
 ##################################################################
+
+STOP_WORDS = set([u'all', u'just', u'being', u'over', u'both', u'through', u'yourselves', u'its', u'before', u'o', u'hadn', u'herself', u'll', u'had', u'should', u'to', u'only', u'won', u'under', u'ours', u'has', u'do', u'them', u'his', u'very', u'they', u'not', u'during', u'now', u'him', u'nor', u'd', u'did', u'didn', u'this', u'she', u'each', u'further', u'where', u'few', u'because', u'doing', u'some', u'hasn', u'are', u'our', u'ourselves', u'out', u'what', u'for', u'while', u're', u'does', u'above', u'between', u'mustn', u't', u'be', u'we', u'who', u'were', u'here', u'shouldn', u'hers', u'by', u'on', u'about', u'couldn', u'of', u'against', u's', u'isn', u'or', u'own', u'into', u'yourself', u'down', u'mightn', u'wasn', u'your', u'from', u'her', u'their', u'aren', u'there', u'been', u'whom', u'too', u'wouldn', u'themselves', u'weren', u'was', u'until', u'more', u'himself', u'that', u'but', u'don', u'with', u'than', u'those', u'he', u'me', u'myself', u'ma', u'these', u'up', u'will', u'below', u'ain', u'can', u'theirs', u'my', u'and', u've', u'then', u'is', u'am', u'it', u'doesn', u'an', u'as', u'itself', u'at', u'have', u'in', u'any', u'if', u'again', u'no', u'when', u'same', u'how', u'other', u'which', u'you', u'shan', u'needn', u'haven', u'after', u'most', u'such', u'why', u'a', u'off', u'i', u'm', u'yours', u'so', u'y', u'the', u'having', u'once'])
 
 DC_CATEGORY_NAMES = [
     'unknown',
@@ -64,6 +66,7 @@ def init_env():
         
 init_env()
 
+
 class WEDC(object):
 
     ##################################################################
@@ -91,6 +94,18 @@ class WEDC(object):
             self.vectorizer_model_path = DC_DEFAULT_VECTORIZER_MODEL_PATH
 
     def load_data(self, filepath=None):
+
+        def clean_content(content):
+            content = content.lower()
+
+            # remove digits and punctuations
+            content = ''.join([_ for _ in content if (_ >= 'a' and _ <= 'z') or (_ in ' \t')])
+            
+            # remove stopwords
+            # content = ' '.join([_ for _ in content.split() if _ not in STOP_WORDS])
+            # print content
+            return content
+
         dataset = []
         labels = []
         with open(filepath, 'rb') as csvfile:
@@ -99,14 +114,14 @@ class WEDC(object):
             for row in reader:
                 label =row[0]
                 content = row[1].decode('utf-8', 'ignore').encode('ascii', 'ignore')
-                dataset.append(content)
+                dataset.append(clean_content(content))
                 labels.append(label)
         return dataset, labels
 
     def load_vectorizer(self, handler_type='count', **kwargs):
         vectorizers = {
             'count': CountVectorizer(binary=kwargs.get('binary', True)),
-            'tfidf': TfidfVectorizer(min_df=kwargs.get('min_df', .25))
+            'tfidf': TfidfVectorizer(min_df=kwargs.get('min_df', 1))
         } 
         return vectorizers[handler_type]
 
@@ -128,12 +143,13 @@ class WEDC(object):
             self.labels += new_labels
             self.size += len(new_labels)
 
-        vectors = self.vectorizer.fit_transform(self.corpus).toarray()
-        self.classifier.fit(vectors, self.labels)
+        # full matrix
+        # vectors = self.vectorizer.fit_transform(self.corpus).toarray()
+        # self.classifier.fit(vectors, self.labels)
         
         # sparse matrix
-        # vectors = self.vectorizer.fit_transform(self.corpus)
-        # self.classifier.fit(vectors, self.labels)
+        vectors = self.vectorizer.fit_transform(self.corpus)
+        self.classifier.fit(vectors, self.labels)
 
         joblib.dump(self.classifier, self.classifier_model_path) 
         joblib.dump(self.vectorizer, self.vectorizer_model_path) 
@@ -183,12 +199,4 @@ class WEDC(object):
             pred_y = self.classifier.predict(test_X)
 
             target_names = ['massage', 'escort', 'job_ads']
-            print classification_report(text_y, pred_y, target_names=target_names)
-
-if __name__ == '__main__':
-    dc = WEDC(data_path=DC_DEFAULT_DATASET_PATH, vectorizer_model_path=None, vectorizer_type='count', classifier_model_path=None, classifier_type='knn', classifier_algorithm='auto', metrix='jaccard')
-    
-    dc.evaluate(n_iter=1, test_size=.25, random_state=12)
-
-    dc = WEDC(data_path=DC_DEFAULT_DATASET_PATH, vectorizer_model_path=None, vectorizer_type='tfidf', classifier_model_path=None, classifier_type='knn', classifier_algorithm='brute', metrix='cosine')
-    dc.evaluate(n_iter=1, test_size=.25, random_state=12)
+            print classification_report(text_y, pred_y, target_names=target_names)    
