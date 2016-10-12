@@ -2,7 +2,7 @@
 # @Author: ZwEin
 # @Date:   2016-10-06 23:36:45
 # @Last Modified by:   ZwEin
-# @Last Modified time: 2016-10-12 14:04:51
+# @Last Modified time: 2016-10-12 14:41:11
 # -*- coding: utf-8 -*-
 # @Author: ZwEin
 # @Date:   2016-09-23 12:58:37
@@ -127,12 +127,14 @@ class WEDC(object):
             self.corpus += new_corpus
             self.labels += new_labels
             self.size += len(new_labels)
-            
-        # vectors = self.vectorizer.fit_transform(self.corpus).toarray()
-        # self.classifier.fit(vectors, self.labels)
-        
-        vectors = self.vectorizer.fit_transform(self.corpus)
+
+        vectors = self.vectorizer.fit_transform(self.corpus).toarray()
         self.classifier.fit(vectors, self.labels)
+        
+        # sparse matrix
+        # vectors = self.vectorizer.fit_transform(self.corpus)
+        # self.classifier.fit(vectors, self.labels)
+
         joblib.dump(self.classifier, self.classifier_model_path) 
         joblib.dump(self.vectorizer, self.vectorizer_model_path) 
         
@@ -160,7 +162,33 @@ class WEDC(object):
         
         return [DC_CATEGORY_NAMES[int(i)] for i in classifier.predict(data_corpus)]
 
+    def evaluate(self, n_iter=1, test_size=.25, random_state=12):
+        from sklearn import cross_validation
+        from sklearn.metrics import classification_report
+
+        rs = cross_validation.ShuffleSplit(self.size, n_iter=n_iter, test_size=test_size, random_state=random_state)
+
+        vectors = self.vectorizer.fit_transform(self.corpus).toarray()
+        
+        for train_index, test_index in rs:
+            train_X = [vectors[i] for i in range(self.size) if i in train_index]
+            train_y = [self.labels[i] for i in range(self.size) if i in train_index]
+
+            test_origin = [self.corpus[i] for i in range(self.size) if i in test_index]
+            test_X = [vectors[i] for i in range(self.size) if i in test_index]
+            text_y = [self.labels[i] for i in range(self.size) if i in test_index]
+
+            self.classifier.fit(train_X, train_y)
+
+            pred_y = self.classifier.predict(test_X)
+
+            target_names = ['massage', 'escort', 'job_ads']
+            print classification_report(text_y, pred_y, target_names=target_names)
 
 if __name__ == '__main__':
-    dc = WEDC()
-    dc.train()
+    dc = WEDC(data_path=DC_DEFAULT_DATASET_PATH, vectorizer_model_path=None, vectorizer_type='count', classifier_model_path=None, classifier_type='knn', classifier_algorithm='auto', metrix='jaccard')
+    
+    dc.evaluate(n_iter=1, test_size=.25, random_state=12)
+
+    dc = WEDC(data_path=DC_DEFAULT_DATASET_PATH, vectorizer_model_path=None, vectorizer_type='tfidf', classifier_model_path=None, classifier_type='knn', classifier_algorithm='brute', metrix='cosine')
+    dc.evaluate(n_iter=1, test_size=.25, random_state=12)
