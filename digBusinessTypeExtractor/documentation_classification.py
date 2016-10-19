@@ -2,7 +2,7 @@
 # @Author: ZwEin
 # @Date:   2016-10-06 23:36:45
 # @Last Modified by:   ZwEin
-# @Last Modified time: 2016-10-19 16:53:35
+# @Last Modified time: 2016-10-19 16:54:15
 # -*- coding: utf-8 -*-
 # @Author: ZwEin
 # @Date:   2016-09-23 12:58:37
@@ -102,7 +102,7 @@ class WEDC(object):
             content = ''.join([_ for _ in content if (_ >= 'a' and _ <= 'z') or (_ in ' \t')])
             
             # remove stopwords
-            content = ' '.join([_ for _ in content.split() if _ not in STOP_WORDS])
+            # content = ' '.join([_ for _ in content.split() if _ not in STOP_WORDS])
             # print content
             return content
 
