@@ -2,7 +2,7 @@
 # @Author: ZwEin
 # @Date:   2016-10-06 23:36:45
 # @Last Modified by:   ZwEin
-# @Last Modified time: 2016-10-19 16:54:15
+# @Last Modified time: 2016-10-19 16:58:05
 # -*- coding: utf-8 -*-
 # @Author: ZwEin
 # @Date:   2016-09-23 12:58:37
@@ -135,8 +135,10 @@ class WEDC(object):
         }
         return classifiers[handler_type]
 
+    def save_model(model, path):
+        joblib.dump(model, path) 
 
-    def train(self, data_path=None):
+    def train(self, data_path=None, model_saved=False):
         if data_path:
             new_corpus, new_labels = self.load_data(filepath=data_path)
             self.corpus += new_corpus
@@ -151,8 +153,9 @@ class WEDC(object):
         vectors = self.vectorizer.fit_transform(self.corpus)
         self.classifier.fit(vectors, self.labels)
 
-        joblib.dump(self.classifier, self.classifier_model_path) 
-        joblib.dump(self.vectorizer, self.vectorizer_model_path) 
+        if model_saved:
+            save_model(self.classifier, self.classifier_model_path) 
+            save_model(self.vectorizer, self.vectorizer_model_path) 
         
         return self.classifier, self.vectorizer
 
