@@ -14,7 +14,7 @@ from digBusinessTypeExtractor.documentation_classification import WEDC, DC_DEFAU
 class TestWEDCMethods(unittest.TestCase):
 
     def setUp(self):
-        dc = WEDC(data_path=DC_DEFAULT_DATASET_PATH, vectorizer_model_path=None, vectorizer_type='tfidf', classifier_model_path=None, classifier_type='knn', classifier_algorithm='brute', metrix='cosine')
+        dc = WEDC(data_path=DC_DEFAULT_DATASET_PATH, vectorizer_model_path=None, classifier_model_path=None, vectorizer_type='tfidf', classifier_type='knn', classifier_algorithm='brute', metrix='cosine')
         dc.train(model_saved=True)
 
     def tearDown(self):

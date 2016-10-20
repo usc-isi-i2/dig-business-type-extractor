@@ -2,7 +2,7 @@
 # @Author: ZwEin
 # @Date:   2016-10-06 23:36:45
 # @Last Modified by:   ZwEin
-# @Last Modified time: 2016-10-19 17:43:33
+# @Last Modified time: 2016-10-19 17:54:04
 # -*- coding: utf-8 -*-
 # @Author: ZwEin
 # @Date:   2016-09-23 12:58:37
@@ -73,7 +73,7 @@ class WEDC(object):
     # Basic Methods
     ##################################################################
 
-    def __init__(self, data_path=DC_DEFAULT_DATASET_PATH, vectorizer_model_path=None, classifier_model_path=None):
+    def __init__(self, data_path=DC_DEFAULT_DATASET_PATH, vectorizer_model_path=None, classifier_model_path=None, vectorizer_type='tfidf', classifier_type='knn', classifier_algorithm='brute', metrix='cosine'):
         self.corpus = []
         self.labels = []
         self.size = 0
@@ -83,6 +83,11 @@ class WEDC(object):
             self.corpus += new_corpus
             self.labels += new_labels
             self.size += len(new_labels)
+
+        self.vectorizer_type = 'tfidf'
+        self.classifier_type = 'knn'
+        self.classifier_algorithm='brute'
+        self.metrix='cosine'
 
         self.vectorizer = None
         self.classifier = None
@@ -138,21 +143,24 @@ class WEDC(object):
         }
         return classifiers[handler_type]
 
+    def init_classifier_and_vectorizer(self):
+        if not self.vectorizer:
+            self.vectorizer = self.load_vectorizer(handler_type=self.vectorizer_type, binary=True, stop_words=STOP_WORDS)
+
+        if not self.classifier:
+            self.classifier = self.load_classifier(handler_type=self.classifier_type, algorithm=self.classifier_algorithm, weights='distance', n_neighbors=5, metric=self.metrix)
+
     def save_model(self, model, path):
         joblib.dump(model, path) 
 
-    def train(self, data_path=None, model_saved=False, vectorizer_type='tfidf', classifier_type='knn', classifier_algorithm='brute', metrix='cosine'):
+    def train(self, data_path=None, model_saved=False):
         if data_path:
             new_corpus, new_labels = self.load_data(filepath=data_path)
             self.corpus += new_corpus
             self.labels += new_labels
             self.size += len(new_labels)
 
-        if not self.vectorizer:
-            self.vectorizer = self.load_vectorizer(handler_type=vectorizer_type, binary=True, stop_words=STOP_WORDS)
-
-        if not self.classifier:
-            self.classifier = self.load_classifier(handler_type=classifier_type, algorithm=classifier_algorithm, weights='distance', n_neighbors=5, metric=metrix)
+        self.init_classifier_and_vectorizer()
 
         # full matrix
         # vectors = self.vectorizer.fit_transform(self.corpus).toarray()
@@ -193,6 +201,8 @@ class WEDC(object):
     def evaluate(self, n_iter=1, test_size=.25, random_state=12):
         from sklearn import cross_validation
         from sklearn.metrics import classification_report
+
+        self.init_classifier_and_vectorizer()
 
         rs = cross_validation.ShuffleSplit(self.size, n_iter=n_iter, test_size=test_size, random_state=random_state)
 
