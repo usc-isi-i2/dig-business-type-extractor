@@ -3,7 +3,7 @@ import time
 import os
 import unittest
 
-# sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 # TEST_DATA_DIR = os.path.join(os.path.dirname(__file__), 'data')
 
 from digExtractor.extractor import Extractor
@@ -14,7 +14,8 @@ from digBusinessTypeExtractor.documentation_classification import WEDC, DC_DEFAU
 class TestWEDCMethods(unittest.TestCase):
 
     def setUp(self):
-        pass
+        dc = WEDC(data_path=DC_DEFAULT_DATASET_PATH, vectorizer_model_path=None, vectorizer_type='tfidf', classifier_model_path=None, classifier_type='knn', classifier_algorithm='brute', metrix='cosine')
+        dc.train(model_saved=True)
 
     def tearDown(self):
         pass

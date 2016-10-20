@@ -2,7 +2,7 @@
 # @Author: ZwEin
 # @Date:   2016-10-06 23:36:45
 # @Last Modified by:   ZwEin
-# @Last Modified time: 2016-10-19 16:58:05
+# @Last Modified time: 2016-10-19 17:37:43
 # -*- coding: utf-8 -*-
 # @Author: ZwEin
 # @Date:   2016-09-23 12:58:37
@@ -84,8 +84,8 @@ class WEDC(object):
             self.labels += new_labels
             self.size += len(new_labels)
 
-        self.vectorizer = self.load_vectorizer(handler_type=vectorizer_type, binary=True, stop_words=STOP_WORDS)
-        self.classifier = self.load_classifier(handler_type=classifier_type, algorithm=classifier_algorithm, weights='distance', n_neighbors=5, metric=metrix)
+        self.vectorizer = None
+        self.classifier = None
 
         if not classifier_model_path:
             self.classifier_model_path = DC_DEFAULT_CLASSIFIER_MODEL_PATH
@@ -121,7 +121,8 @@ class WEDC(object):
     def load_vectorizer(self, handler_type='count', **kwargs):
         vectorizers = {
             'count': CountVectorizer(binary=kwargs.get('binary', True)),
-            'tfidf': TfidfVectorizer(min_df=kwargs.get('min_df', 1), stop_words=kwargs.get('stop_words', STOP_WORDS))
+            # 'tfidf': TfidfVectorizer(min_df=kwargs.get('min_df', 1), stop_words=kwargs.get('stop_words', STOP_WORDS))
+            'tfidf': TfidfVectorizer(min_df=kwargs.get('min_df', 1))
         } 
         return vectorizers[handler_type]
 
@@ -135,7 +136,7 @@ class WEDC(object):
         }
         return classifiers[handler_type]
 
-    def save_model(model, path):
+    def save_model(self, model, path):
         joblib.dump(model, path) 
 
     def train(self, data_path=None, model_saved=False):
@@ -144,6 +145,12 @@ class WEDC(object):
             self.corpus += new_corpus
             self.labels += new_labels
             self.size += len(new_labels)
+
+        if not self.vectorizer:
+            self.vectorizer = self.load_vectorizer(handler_type=vectorizer_type, binary=True, stop_words=STOP_WORDS)
+
+        if not self.classifier:
+            self.classifier = self.load_classifier(handler_type=classifier_type, algorithm=classifier_algorithm, weights='distance', n_neighbors=5, metric=metrix)
 
         # full matrix
         # vectors = self.vectorizer.fit_transform(self.corpus).toarray()
@@ -154,13 +161,13 @@ class WEDC(object):
         self.classifier.fit(vectors, self.labels)
 
         if model_saved:
-            save_model(self.classifier, self.classifier_model_path) 
-            save_model(self.vectorizer, self.vectorizer_model_path) 
+            self.save_model(self.classifier, self.classifier_model_path) 
+            self.save_model(self.vectorizer, self.vectorizer_model_path) 
         
         return self.classifier, self.vectorizer
 
     def predict(self, data, classifier_model_path=None, vectorizer_model_path=None):
-        if not data :
+        if not data:
             return None
         if not classifier_model_path:
             classifier_model_path = self.classifier_model_path
@@ -169,17 +176,18 @@ class WEDC(object):
 
         data_corpus = [data] if isinstance(data, basestring) else data
 
-        # load trained classifier and vectorizer models
-        classifier = vectorizer = None
-        try:
-            classifier = joblib.load(classifier_model_path) 
-            vectorizer = joblib.load(vectorizer_model_path)
-        except:
-            classifier, vectorizer = self.train()
+        if not self.classifier or not self.vectorizer:
+            # load trained classifier and vectorizer models
+            try:
+                self.classifier = joblib.load(classifier_model_path) 
+                self.vectorizer = joblib.load(vectorizer_model_path)
+
+            except:
+                self.classifier, self.vectorizer = self.train()
             
-        data_corpus = vectorizer.transform(data_corpus).toarray()
+        data_corpus = self.vectorizer.transform(data_corpus).toarray()
         
-        return [DC_CATEGORY_NAMES[int(i)] for i in classifier.predict(data_corpus)]
+        return [DC_CATEGORY_NAMES[int(i)] for i in self.classifier.predict(data_corpus)]
 
     def evaluate(self, n_iter=1, test_size=.25, random_state=12):
         from sklearn import cross_validation
