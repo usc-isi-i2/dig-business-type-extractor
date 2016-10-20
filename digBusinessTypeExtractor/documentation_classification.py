@@ -2,7 +2,7 @@
 # @Author: ZwEin
 # @Date:   2016-10-06 23:36:45
 # @Last Modified by:   ZwEin
-# @Last Modified time: 2016-10-19 17:37:43
+# @Last Modified time: 2016-10-19 17:43:33
 # -*- coding: utf-8 -*-
 # @Author: ZwEin
 # @Date:   2016-09-23 12:58:37
@@ -73,7 +73,7 @@ class WEDC(object):
     # Basic Methods
     ##################################################################
 
-    def __init__(self, data_path=DC_DEFAULT_DATASET_PATH, vectorizer_model_path=None, vectorizer_type='tfidf', classifier_model_path=None, classifier_type='knn', classifier_algorithm='brute', metrix='cosine'):
+    def __init__(self, data_path=DC_DEFAULT_DATASET_PATH, vectorizer_model_path=None, classifier_model_path=None):
         self.corpus = []
         self.labels = []
         self.size = 0
@@ -86,6 +86,8 @@ class WEDC(object):
 
         self.vectorizer = None
         self.classifier = None
+        # self.vectorizer = self.load_vectorizer(handler_type=vectorizer_type, binary=True, stop_words=STOP_WORDS)
+        # self.classifier = self.load_classifier(handler_type=classifier_type, algorithm=classifier_algorithm, weights='distance', n_neighbors=5, metric=metrix)
 
         if not classifier_model_path:
             self.classifier_model_path = DC_DEFAULT_CLASSIFIER_MODEL_PATH
@@ -139,7 +141,7 @@ class WEDC(object):
     def save_model(self, model, path):
         joblib.dump(model, path) 
 
-    def train(self, data_path=None, model_saved=False):
+    def train(self, data_path=None, model_saved=False, vectorizer_type='tfidf', classifier_type='knn', classifier_algorithm='brute', metrix='cosine'):
         if data_path:
             new_corpus, new_labels = self.load_data(filepath=data_path)
             self.corpus += new_corpus
@@ -181,7 +183,6 @@ class WEDC(object):
             try:
                 self.classifier = joblib.load(classifier_model_path) 
                 self.vectorizer = joblib.load(vectorizer_model_path)
-
             except:
                 self.classifier, self.vectorizer = self.train()
             
