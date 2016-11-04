@@ -7,9 +7,6 @@
 
 from distutils.core import setup
 from setuptools import find_packages
-from digBusinessTypeExtractor.documentation_classification import init_env
-
-init_env()
 
 setup(
     name='digBusinessTypeExtractor',
