@@ -19,5 +19,5 @@ setup(
     packages=find_packages(),
     package_data={'digBusinessTypeExtractor': ['data/*.csv']},
     keywords=['business', 'type', 'extractor'],
-    install_requires=['digExtractor', 'numpy', 'scipy', 'scikit-learn==0.17']
+    install_requires=['digExtractor', 'numpy', 'scipy', 'scikit-learn==1.5.0']
 )
